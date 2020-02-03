@@ -3,6 +3,10 @@ package tomoxlending
 import (
 	"errors"
 	"fmt"
+	"math/big"
+	"strconv"
+	"time"
+
 	"github.com/tomochain/tomochain/consensus"
 	"github.com/tomochain/tomochain/core/types"
 	"github.com/tomochain/tomochain/p2p"
@@ -11,9 +15,6 @@ import (
 	"github.com/tomochain/tomochain/tomoxDAO"
 	"github.com/tomochain/tomochain/tomoxlending/lendingstate"
 	"gopkg.in/karalabe/cookiejar.v2/collections/prque"
-	"math/big"
-	"strconv"
-	"time"
 
 	lru "github.com/hashicorp/golang-lru"
 	"github.com/tomochain/tomochain/common"
@@ -595,7 +596,7 @@ func (l *Lending) ProcessLiquidationData(chain consensus.ChainContext, time *big
 		log.Error("Fail when get all lending books", "error", err)
 		return []common.Hash{}, err
 	}
-
+	log.Debug("aaaaaaa", "time", time)
 	for _, lendingPair := range allPairs {
 		orderbook := tradingstate.GetTradingOrderBookHash(lendingPair.CollateralToken, lendingPair.LendingToken)
 		_, liquidationPrice, err := l.GetCollateralPrices(chain, statedb, tradingState, lendingPair.CollateralToken, lendingPair.LendingToken)
@@ -603,6 +604,7 @@ func (l *Lending) ProcessLiquidationData(chain consensus.ChainContext, time *big
 			log.Error("Fail when get all trading pairs", "error", err)
 			return []common.Hash{}, err
 		}
+		log.Debug("ProcessLiquidationData GetCollateralPrices start", "lendingpair", lendingPair.CollateralToken.Hex()+"/"+lendingPair.LendingToken.Hex(), "liquidationPrice", liquidationPrice)
 		lowestPrice, liquidationData := tradingState.GetLowestLiquidationPriceData(orderbook, liquidationPrice)
 		for lowestPrice.Sign() > 0 && lowestPrice.Cmp(liquidationPrice) < 0 {
 			for lendingBook, tradingIds := range liquidationData {
@@ -618,9 +620,11 @@ func (l *Lending) ProcessLiquidationData(chain consensus.ChainContext, time *big
 				}
 			}
 			lowestPrice, liquidationData = tradingState.GetLowestLiquidationPriceData(orderbook, liquidationPrice)
+			log.Debug("GetLowestLiquidationPriceData", "lowestPrice", lowestPrice, "liquidationData", liquidationData)
 		}
+		log.Debug("ProcessLiquidationData GetCollateralPrices end ", "lendingpair", lendingPair.CollateralToken.Hex()+"/"+lendingPair.LendingToken.Hex(), "liquidationPrice", liquidationPrice)
 	}
-
+	log.Debug("bbbbbbbb", "time", time)
 	for lendingBook, _ := range allLendingBooks {
 		lowestTime, tradingIds := lendingState.GetLowestLiquidationTime(lendingBook, time)
 		for lowestTime.Sign() > 0 && lowestTime.Cmp(time) < 0 {
@@ -635,6 +639,8 @@ func (l *Lending) ProcessLiquidationData(chain consensus.ChainContext, time *big
 				}
 			}
 		}
+		lowestTime, tradingIds = lendingState.GetLowestLiquidationTime(lendingBook, time)
 	}
+	log.Debug("cccccccc", "time", time)
 	return liquidatedTrades, nil
 }

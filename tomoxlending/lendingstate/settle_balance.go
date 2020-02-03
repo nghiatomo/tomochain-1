@@ -3,13 +3,14 @@ package lendingstate
 import (
 	"encoding/json"
 	"errors"
+	"math/big"
+
 	"github.com/tomochain/tomochain/common"
 	"github.com/tomochain/tomochain/log"
-	"math/big"
 )
 
 var (
-	ErrQuantityTradeTooSmall = errors.New("quantity trade too small")
+	ErrQuantityTradeTooSmall  = errors.New("quantity trade too small")
 	ErrInvalidCollateralPrice = errors.New("unable to retrieve price of this collateral. Please try another collateral")
 )
 
@@ -62,22 +63,22 @@ func GetSettleBalance(takerSide string,
 			log.Debug("quantity lending too small", "quantityToLend", quantityToLend, "takerFee", takerFee)
 			return result, ErrQuantityTradeTooSmall
 		}
-		if lendingToken.String() != common.TomoNativeAddress && lendTokenTOMOPrice != nil && lendTokenTOMOPrice.Cmp(common.Big0) > 0 {
-			exTakerReceivedFee := new(big.Int).Mul(takerFee, lendTokenTOMOPrice)
-			exTakerReceivedFee = exTakerReceivedFee.Div(exTakerReceivedFee, lendTokenDecimal)
-			log.Debug("exTakerReceivedFee", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
-			if exTakerReceivedFee.Cmp(common.RelayerLendingFee) <= 0 {
-				log.Debug("takerFee too small", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
-				return result, ErrQuantityTradeTooSmall
-			}
-		} else if lendingToken.String() == common.TomoNativeAddress {
-			exTakerReceivedFee := takerFee
-			log.Debug("exTakerReceivedFee", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
-			if exTakerReceivedFee.Cmp(common.RelayerLendingFee) <= 0 {
-				log.Debug("takerFee too small", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
-				return result, ErrQuantityTradeTooSmall
-			}
-		}
+		// if lendingToken.String() != common.TomoNativeAddress && lendTokenTOMOPrice != nil && lendTokenTOMOPrice.Cmp(common.Big0) > 0 {
+		// 	exTakerReceivedFee := new(big.Int).Mul(takerFee, lendTokenTOMOPrice)
+		// 	exTakerReceivedFee = exTakerReceivedFee.Div(exTakerReceivedFee, lendTokenDecimal)
+		// 	log.Debug("exTakerReceivedFee", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
+		// 	if exTakerReceivedFee.Cmp(common.RelayerLendingFee) <= 0 {
+		// 		log.Debug("takerFee too small", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
+		// 		return result, ErrQuantityTradeTooSmall
+		// 	}
+		// } else if lendingToken.String() == common.TomoNativeAddress {
+		// 	exTakerReceivedFee := takerFee
+		// 	log.Debug("exTakerReceivedFee", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
+		// 	if exTakerReceivedFee.Cmp(common.RelayerLendingFee) <= 0 {
+		// 		log.Debug("takerFee too small", "quantityToLend", quantityToLend, "takerFee", takerFee, "exTakerReceivedFee", exTakerReceivedFee, "borrowFee", borrowFee)
+		// 		return result, ErrQuantityTradeTooSmall
+		// 	}
+		// }
 		result = &LendingSettleBalance{
 			//Borrower
 			Taker: TradeResult{

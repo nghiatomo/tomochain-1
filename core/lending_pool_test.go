@@ -5,7 +5,6 @@ import (
 	"log"
 	"math/big"
 	"testing"
-	"time"
 
 	"github.com/tomochain/tomochain/common"
 	"github.com/tomochain/tomochain/core/types"
@@ -73,6 +72,6 @@ func testSendLending(t *testing.T, nonce uint64, amount *big.Int, interest uint6
 
 func TestSendLending(t *testing.T) {
 	testSendLending(t, 0, new(big.Int).SetUint64(1000000000000000000), 10, "INVEST", "NEW", 0)
-	time.Sleep(2000)
-	testSendLending(t, 1, new(big.Int).SetUint64(1000000000000000000), 10, "BORROW", "NEW", 0)
+	//time.Sleep(2000)
+	testSendLending(t, 1, new(big.Int).SetUint64(100000000000), 10, "BORROW", "NEW", 0)
 }
